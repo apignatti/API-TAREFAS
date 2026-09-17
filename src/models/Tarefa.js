@@ -1,48 +1,47 @@
-const {DataTypes} = require ('sequelize');
+const { DataTypes } = require('sequelize');
 const { toDefaultValue } = require('sequelize/lib/utils');
 
 
 module.exports = (sequelize) => {
     return sequelize.define("Tarefa",
         {
-            /*id:{
-                type: DataTypes.INTEGER,
-                primaryKey: true,
-                autoIncrement: true
-            },*/
-            titulo:{
+            titulo: {
                 type: DataTypes.STRING(150),
                 allowNull: false
             },
-            descricao:{
+            descricao: {
                 type: DataTypes.TEXT,
                 allowNull: false
             },
-            preco:{
-                type: DataTypes.DECIMAL(10,2),
+            preco: {
+                type: DataTypes.DECIMAL(10, 2),
                 allowNull: true,
                 defaultValue: 0.00
             },
-            status:{
+            status: {
                 type: DataTypes.ENUM('PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDO'),
                 allowNull: false,
                 toDefaultValue: 'PENDENTE'
             },
-
-            /*data_criacao:{
-                type: DataTypes.DATEONLY,
-                allowNull: false
+            tempo_estimado_horas: {
+                type: DataTypes.DECIMAL(5, 2),
+                allowNull: true,
+                defaultValue: 0.00
             },
-            data_atualizacao:{
-                type: DataTypes.DATEONLY,
-                allowNull: false
-            }*/
+            prioridade: {
+                type: DataTypes.ENUM('BAIXA', 'MEDIA', 'ALTA'),
+                allowNull: false,
+                defaultValue: 'MEDIA'
             },
+            tags: {
+                type: DataTypes.STRING(255),
+                allowNull: true
+            }
+        },
+        {
+            tableName: "tarefas",
+            timestamps: true
 
-            {
-                tableName: "tarefas",
-                timestamps: true
-            
         }
     );
 };
