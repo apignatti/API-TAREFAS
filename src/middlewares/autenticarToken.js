@@ -12,7 +12,7 @@ function autenticarToken(request, response, next) {
 
     jwt.verify(token, process.env.JWT_SECRET, (err, usuario)=>{
         if(err) return response.status(403).json({
-            mensagem: "Toekn Inválido"
+            mensagem: "Token Inválido"
         })
 
         request.usuario = usuario

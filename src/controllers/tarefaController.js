@@ -105,6 +105,93 @@ const cadastrarTarefa = async(request, response)=>{
     }
 }
 
+const atualizarTarefa = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (isNaN(id)) {
+            return res.status(400).json({ mensagem: "O campo id precisa ser numérico" });
+        }
+
+        const tarefa = await Tarefa.findByPk(id);
+
+        if (!tarefa) {
+            return res.status(404).json({ mensagem: "Tarefa não encontrada" });
+        }
+
+        // Extrai todos os campos possíveis do corpo da requisição
+        const { titulo, descricao, preco, tempo_estimado_horas, data_limite, prioridade, id_responsavel, status} = req.body;
+        
+
+        const novoResponsavelId = id_responsavel;
+
+        // Se houver alteração de responsável, valida se ele existe
+        if (novoResponsavelId !== undefined && novoResponsavelId !== null) {
+            const responsavelExiste = await Responsavel.findByPk(novoResponsavelId);
+            if (!responsavelExiste) {
+                return res.status(404).json({ mensagem: "Responsável não encontrado." });
+            }
+        }
+
+        // Atualiza a tarefa mantendo os valores antigos caso o campo não seja enviado
+        await tarefa.update({
+            titulo: titulo !== undefined ? titulo : tarefa.titulo,
+            descricao: descricao !== undefined ? descricao : tarefa.descricao,
+            preco: preco !== undefined ? preco : tarefa.preco,
+            tempo_estimado_horas: tempo_estimado_horas !== undefined ? tempo_estimado_horas : tarefa.tempo_estimado_horas,
+            data_limite: data_limite !== undefined ? data_limite : tarefa.data_limite,
+            prioridade: prioridade !== undefined ? prioridade : tarefa.prioridade,
+            status: status !== undefined ? status : tarefa.status,
+            id_responsavel: novoResponsavelId !== undefined ? novoResponsavelId : tarefa.id_responsavel
+        });
+
+        // Busca atualizada com o responsável (excluindo a senha por segurança, igual ao criarTarefa)
+        const tarefaAtualizada = await Tarefa.findByPk(id, {
+            include: [{
+                model: Responsavel,
+                as: 'responsavel',
+                attributes: { exclude: ['senha'] }
+            }]
+        });
+
+        return res.status(200).json({
+            idBusca: id, 
+            mensagem: "Tarefa atualizada com sucesso!",
+            tarefa: tarefaAtualizada
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar tarefa:', error);
+        return res.status(500).json({ mensagem: "Erro interno do servidor", erro: error.message });
+    }
+};
+
+// Deletar tarefa
+const deletarTarefa = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (isNaN(id)) {
+            return res.status(400).json({ mensagem: "O campo id precisa ser numérico" });
+        }
+
+        const tarefa = await Tarefa.findByPk(id);
+
+        if (!tarefa) {
+            return res.status(404).json({ mensagem: "Tarefa não encontrada" });
+        }
+
+        await tarefa.destroy();
+
+        return res.status(200).json({
+            mensagem: "Tarefa removida com sucesso!",
+            tarefa: tarefa
+        });
+    } catch (error) {
+        console.error('Erro ao deletar tarefa:', error);
+        return res.status(500).json({ mensagem: "Erro interno do servidor", erro: error.message });
+    }
+};
+
 module.exports = {
-    listarTarefas, cadastrarTarefa, buscarPorId
+    listarTarefas, cadastrarTarefa, buscarPorId, deletarTarefa, atualizarTarefa
 };

@@ -6,9 +6,7 @@ const autenticarToken = require("../middlewares/autenticarToken.js")
 router.get("/", autenticarToken, tarefaController.listarTarefas);
 router.post("/", autenticarToken, tarefaController.cadastrarTarefa);
 router.get("/:id", autenticarToken, tarefaController.buscarPorId);
+router.put("/:id", autenticarToken, tarefaController.atualizarTarefa);
+router.delete("/:id", autenticarToken, tarefaController.deletarTarefa);
 
-
-/*router.put("/:id",tarefaController.atualizarTarefa);
-router.delete("/:id",tarefaController.deletarTarefa);
-*/
 module.exports = router;

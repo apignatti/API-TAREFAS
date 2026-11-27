@@ -121,6 +121,121 @@ const login = async (request, response) => {
     }
 }
 
+const  buscarPorId = async (require, response)=>{
+    try{
+        const id = Number(require.params.id);
+
+        if(isNaN(id)){
+            return response.status(400).json({
+                mensagem: "O campo id, precisa ser numérico."
+            })
+        }
+        const responsavel = await Responsavel.findByPk(id, {
+            include: [{
+                model: Tarefa, 
+                as: 'tarefa'
+            }]
+        });
+        if(responsavel){
+            return response.status(200).json({
+                idBusca: id,
+                responsavel
+            })
+        }else{
+            return response.status(404).json({
+                idBusca: id,
+                mensagem: "Registro não encontrado"
+            })
+        }
+    }catch(error){
+        return response.status(500).json({
+            mensagem: "Erro interno do Servidor",
+            erro: error.message
+        })
+    }
+}
+
+
+const atualizarResponsavel = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (isNaN(id)) {
+            return res.status(400).json({ mensagem: "O campo id precisa ser numérico" });
+        }
+
+        const responsavel = await Tarefa.findByPk(id);
+
+        if (!responsavel) {
+            return res.status(404).json({ mensagem: "Responsavel não encontrado" });
+        }
+
+        // Extrai todos os campos possíveis do corpo da requisição
+        const { nome, email, telefone, senha, foto, especialidade, cargo, departamento} = req.body;
+
+        // Atualiza a tarefa mantendo os valores antigos caso o campo não seja enviado
+        await responsavel.update({
+            nome: nome !== undefined ? nome : responsavel.nome,
+            email: email !== undefined ? email : responsavel.email,
+            telefone: telefone !== undefined ? telefone : responsavel.telefone,
+            senha: senha !== undefined ? senha : responsavel.senha,
+            foto: foto !== undefined ? foto : responsavel.foto,
+            especialidade: especialidade !== undefined ? especialidade : responsavel.especialidade,
+            cargo: cargo !== undefined ? cargo : responsavel.cargo,
+            departamento: departamento !== undefined ? departamento : responsavel.departamento,
+        });
+
+        // Busca atualizada com o responsável (excluindo a senha por segurança, igual ao criarTarefa)
+        const responsavelAtualizado = await Responsavel.findByPk(id, {
+            include: [{
+                model: Tarefa,
+                as: 'tarefas',
+            }]
+        });
+
+        responsavelAtualizado.senha = undefined;
+
+        return res.status(200).json({
+            idBusca: id, 
+            mensagem: "Tarefa atualizada com sucesso!",
+            responsavel: responsavelAtualizado
+        });
+
+    } catch (error) {
+        console.error('Erro ao atualizar tarefa:', error);
+        return res.status(500).json({ mensagem: "Erro interno do servidor", erro: error.message });
+    }
+};
+
+
+// Deletar tarefa
+const deletarResponsavel = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (isNaN(id)) {
+            return res.status(400).json({ mensagem: "O campo id precisa ser numérico" });
+        }
+
+        const responsavel = await Responsavel.findByPk(id);
+
+        if (!responsavel) {
+            return res.status(404).json({ mensagem: "Responsavel não encontrada" });
+        }
+
+        await responsavel.destroy();
+
+        return res.status(200).json({
+            mensagem: "Responsavel removido com sucesso!",
+            responsavel: responsavel
+        });
+    } catch (error) {
+        console.error('Erro ao deletar responsavel:', error);
+        return res.status(500).json({ mensagem: "Erro interno do servidor", erro: error.message });
+    }
+};
+
+
 module.exports = {
-    listarResponsaveis, criarResponsavel, login
+    listarResponsaveis, criarResponsavel, login, buscarPorId, atualizarResponsavel, deletarResponsavel
 };
